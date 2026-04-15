@@ -80,9 +80,9 @@ export default function Home() {
             <div className="min-h-screen bg-[url('/weathered_wood.jpg')] bg-cover bg-center p-4 flex flex-col">
             <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
                     <h1 className="text-4xl font-bold text-white text-center mt-8 mb-8">Score</h1>
-    
-                    <div className="bg-white rounded-lg shadow-lg p-6 space-y-6">
-                        <div>
+
+                <div className="bg-white/60 backdrop-blur-md rounded-lg shadow-lg p-6 space-y-6">
+                <div>
                             <label className="block text-gray-700 font-semibold mb-2">Number of Rounds</label>
                             <input
                                 type="number"
@@ -151,8 +151,8 @@ export default function Home() {
         return (
             <div className="min-h-screen bg-[url('/weathered_wood.jpg')] bg-cover bg-center p-4 flex flex-col">
             <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
-                    <div className="bg-white rounded-lg shadow-lg p-4 mb-4">
-                        <div className="text-center mb-2">
+                <div className="bg-white/60 backdrop-blur-md rounded-lg shadow-lg p-4 mb-4">
+                <div className="text-center mb-2">
                             <div className="text-sm text-gray-500">Round {currentRound + 1} of {numRounds}</div>
                             <div className="text-sm text-gray-500">Throw {currentThrow + 1} of 4</div>
                         </div>
@@ -162,8 +162,8 @@ export default function Home() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-lg shadow-lg p-4 mb-4 flex-1 overflow-auto">
-                        <h3 className="font-semibold text-gray-700 mb-3">Scoreboard</h3>
+                <div className="bg-white/60 backdrop-blur-md rounded-lg shadow-lg p-4 mb-4 flex-1 overflow-auto">
+                <h3 className="font-semibold text-gray-700 mb-3">Scoreboard</h3>
                         <div className="space-y-2">
                             {players.map((player, index) => (
                                 <div
@@ -181,8 +181,8 @@ export default function Home() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-lg shadow-lg p-4">
-                        <div className="grid grid-cols-3 gap-2 mb-2">
+                <div className="bg-white/60 backdrop-blur-md rounded-lg shadow-lg p-4">
+                <div className="grid grid-cols-3 gap-2 mb-2">
                             {[0, 1, 2].map((points) => (
                                 <button
                                     key={points}
@@ -225,8 +225,8 @@ export default function Home() {
         <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col">
                 <h1 className="text-4xl font-bold text-white text-center mt-8 mb-8">🏆 Game Over!</h1>
 
-                <div className="bg-white rounded-lg shadow-lg p-6 mb-4">
-                    <h2 className="text-2xl font-bold text-center mb-4">Final Standings</h2>
+            <div className="bg-white/60 backdrop-blur-md rounded-lg shadow-lg p-6 mb-4">
+            <h2 className="text-2xl font-bold text-center mb-4">Final Standings</h2>
                     <div className="space-y-3">
                         {sortedPlayers.map((player, index) => (
                             <div
@@ -248,8 +248,8 @@ export default function Home() {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-lg shadow-lg p-6 mb-4 flex-1 overflow-auto">
-                    <h3 className="text-xl font-bold mb-4">Round by Round</h3>
+            <div className="bg-white/60 backdrop-blur-md rounded-lg shadow-lg p-6 mb-4 flex-1 overflow-auto">
+            <h3 className="text-xl font-bold mb-4">Round by Round</h3>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead>
@@ -282,7 +282,7 @@ export default function Home() {
 
                 <button
                     onClick={resetGame}
-                    className="bg-white hover:bg-gray-100 text-indigo-600 font-bold py-4 rounded-lg text-lg transition-colors mb-4"
+                    className="bg-white/60 backdrop-blur-md hover:bg-white/90 text-indigo-600 font-bold py-4 rounded-lg text-lg transition-colors mb-4"
                 >
                     New Game
                 </button>
