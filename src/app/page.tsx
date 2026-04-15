@@ -20,6 +20,7 @@ export default function Home() {
     const [currentRound, setCurrentRound] = useState(0);
     const [currentThrow, setCurrentThrow] = useState(0);
     const [currentRoundScores, setCurrentRoundScores] = useState<number[]>([]);
+    const [metalBonus, setMetalBonus] = useState(false);
 
     const startGame = () => {
         const initialPlayers: Player[] = playerNames.map(name => ({
@@ -36,8 +37,10 @@ export default function Home() {
     };
 
     const recordThrow = (points: number) => {
-        const newScores = [...currentRoundScores, points];
+        const finalPoints = points + (metalBonus ? 1 : 0);
+        const newScores = [...currentRoundScores, finalPoints];
         setCurrentRoundScores(newScores);
+        setMetalBonus(false);
 
         if (currentThrow === 3) {
             const updatedPlayers = [...players];
@@ -134,7 +137,7 @@ export default function Home() {
 
                         <button
                             onClick={startGame}
-                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg text-lg transition-colors"
+                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl text-lg transition-colors"
                         >
                             Start Game
                         </button>
@@ -182,37 +185,61 @@ export default function Home() {
                     </div>
 
                 <div className="bg-white/60 backdrop-blur-md rounded-lg shadow-lg p-4">
-                <div className="grid grid-cols-3 gap-2 mb-2">
-                            {[0, 1, 2].map((points) => (
-                                <button
-                                    key={points}
-                                    onClick={() => recordThrow(points)}
-                                    className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-4 rounded-lg text-xl transition-colors"
-                                >
-                                    {points}
-                                </button>
-                            ))}
-                        </div>
-                        <div className="grid grid-cols-3 gap-2 mb-2">
-                            {[3, 4, 5].map((points) => (
-                                <button
-                                    key={points}
-                                    onClick={() => recordThrow(points)}
-                                    className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-4 rounded-lg text-xl transition-colors"
-                                >
-                                    {points}
-                                </button>
-                            ))}
-                        </div>
-                        <div className="grid grid-cols-1 gap-2">
-                            <button
-                                onClick={() => recordThrow(7)}
-                                className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-4 rounded-lg text-xl transition-colors"
-                            >
-                                🎯 BULLSEYE (7)
-                            </button>
-                        </div>
+                    {/* Bonus Toggle */}
+                    <button
+                        onClick={() => setMetalBonus(!metalBonus)}
+                        className={`w-full mb-3 py-3 rounded-lg font-bold text-lg transition-colors ${
+                            metalBonus
+                                ? 'bg-emerald-500 text-white'
+                                : 'bg-gray-300 text-gray-700'
+                        }`}
+                    >
+                        +1 Metal-on-Metal {metalBonus ? '✓' : ''}
+                    </button>
+
+                    {/* Score Grid */}
+                    <div className="grid grid-cols-3 gap-2 mb-2">
+                        <button
+                            onClick={() => recordThrow(0)}
+                            className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-4 rounded-lg text-xl"
+                        >
+                            0
+                        </button>
+                        <button
+                            onClick={() => recordThrow(1)}
+                            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 rounded-lg text-xl"
+                        >
+                            1
+                        </button>
+                        <button
+                            onClick={() => recordThrow(2)}
+                            className="bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-lg text-xl"
+                        >
+                            2
+                        </button>
                     </div>
+
+                    <div className="grid grid-cols-3 gap-2 mb-2">
+                        <button
+                            onClick={() => recordThrow(3)}
+                            className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-4 rounded-lg text-xl"
+                        >
+                            3
+                        </button>
+                        <button
+                            onClick={() => recordThrow(4)}
+                            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-lg text-xl"
+                        >
+                            4
+                        </button>
+                        <button
+                            onClick={() => recordThrow(7)}
+                            className="bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-lg text-xl"
+                        >
+                            🎯 7
+                        </button>
+                    </div>
+                  </div>
                 </div>
             </div>
         );
