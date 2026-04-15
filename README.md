@@ -1,36 +1,28 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ninja Star Game
 
-## Getting Started
+This is a score keeper for a ninja star throwing game. You throw the ninja 
+stars in real life and use this web app to keep score.
 
-First, run the development server:
+## How to play (standard rules)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Each game consists of X rounds and Y players. For each round, every player 
+gets 4 ninja star throws. For each game, each player gets one mulligan, which
+lets them retry a single throw if they miss after a bad throw, without a penalty.
+This web app does not yet track mulligans, therefore this rule is optional and flexible.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Scoring
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+In the setup used in the game that inspired this app, we had a target on a dark 
+wood board on a larger, lighter-colored wood board.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Total miss or non-stick:** 0 points
+- **Outer board:** 1 point
+- **Inner board:** 2 points
+- **Outer rings of target:** 3 points
+- **Inner rings of target:** 4 points
+- **Bullseye:** 7 points
+- **_BONUS POINT_ | Metal on metal** (ninja star hits a previously thrown ninja star from this round AND STICKS to the board)**:** +1 bonus point
 
-## Learn More
+If a different ninja star falls out after a new one is thrown, it does NOT subtract any points.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+As of the writing of this readme, I've realized there is no way to log an 8-point throw (metal on metal bullseye), so you'll just have to give the player an extra point next throw if that somehow happens, which is astronomically rare.
