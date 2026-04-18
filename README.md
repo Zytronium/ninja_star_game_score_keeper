@@ -22,11 +22,11 @@ wood board on a larger, lighter-colored wood board.
 - **Outer rings of target:** 3 points
 - **Inner rings of target:** 4 points
 - **Bullseye:** 7 points
-- **_BONUS POINT_ | Metal on metal** (ninja star hits a previously thrown ninja star from this round AND STICKS to the board)**:** +1 bonus point
+- **_BONUS POINTS_ | Metal on metal** (ninja star hits a previously thrown ninja star from this round AND STICKS to the board)**:** +3 bonus points
 
 If a different ninja star falls out after a new one is thrown, it does NOT 
 subtract any points.
 
 When a ninja star hits another ninja star, a metal-on-metal bonus is triggered.
-Press the "+1 Metal-on-Metal" button before pressing the appropriate button for
+Press the "+3 Metal-on-Metal" button ***before*** pressing the appropriate button for
 the throw's score before the bonus point.
