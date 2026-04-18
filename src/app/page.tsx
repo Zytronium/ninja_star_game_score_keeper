@@ -45,7 +45,7 @@ export default function Home() {
     };
 
     const recordThrow = (points: number) => {
-        const finalPoints = points + (metalBonus ? 1 : 0);
+        const finalPoints = points + (metalBonus ? 3 : 0);
         const newScores = [...currentRoundScores, finalPoints];
         setCurrentRoundScores(newScores);
         setMetalBonus(false);
@@ -85,7 +85,7 @@ export default function Home() {
     const applyEdit = (basePoints: number) => {
         if (editPlayerIndex === null || editRoundIndex === null || editThrowIndex === null) return;
 
-        const newScore = basePoints + (editMetalBonus ? 1 : 0);
+        const newScore = basePoints + (editMetalBonus ? 3 : 0);
 
         const updatedPlayers = [...players];
         const player = {...updatedPlayers[editPlayerIndex]};
@@ -267,7 +267,7 @@ export default function Home() {
                                             : 'bg-gray-300 text-gray-700'
                                                 }`}
                                             >
-                                    +1 Metal-on-Metal {editMetalBonus ? '✓' : ''}
+                                    +3 Metal-on-Metal {editMetalBonus ? '✓' : ''}
                                             </button>
 
                                 {/* Score grid — identical layout to playing screen */}
@@ -419,7 +419,7 @@ export default function Home() {
                                 : 'bg-gray-300 text-gray-700'
                         }`}
                     >
-                        +1 Metal-on-Metal {metalBonus ? '✓' : ''}
+                        +3 Metal-on-Metal {metalBonus ? '✓' : ''}
                     </button>
 
                     {/* Score Grid */}
