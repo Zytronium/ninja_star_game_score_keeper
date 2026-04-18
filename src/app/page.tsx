@@ -108,7 +108,7 @@ export default function Home() {
 
     const resetGame = () => {
         setGameState('setup');
-        setNumRounds(3);
+        setNumRounds(5);
         setNumPlayers(2);
         setPlayerNames(['Player 1', 'Player 2']);
         setPlayers([]);
