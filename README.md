@@ -8,7 +8,7 @@ stars in real life and use this web app to keep score.
 Each game consists of X rounds and Y players. For each round, every player 
 gets 4 ninja star throws. For each game, each player gets one mulligan, which
 lets them retry a single throw if they miss after a bad throw, without a penalty.
-This web app does not yet track mulligans, therefore, this rule is optional and 
+This web app does not yet track mulligans; therefore, this rule is optional and 
 flexible.
 
 ## Scoring
