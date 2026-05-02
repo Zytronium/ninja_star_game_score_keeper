@@ -1,7 +1,10 @@
 'use client';
 
 import {useState} from 'react';
-import {Pencil, ChevronLeft} from 'lucide-react';
+import {Pencil, ChevronLeft, Trophy} from 'lucide-react';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import Leaderboard from '@/components/Leaderboard';
 
 type Player = {
     name: string;
@@ -13,6 +16,7 @@ type GameState = 'setup' | 'playing' | 'editing' | 'finished';
 
 export default function Home() {
     const [gameState, setGameState] = useState<GameState>('setup');
+    const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [numRounds, setNumRounds] = useState(5);
     const [numPlayers, setNumPlayers] = useState(2);
     const [playerNames, setPlayerNames] = useState<string[]>(['Player 1', 'Player 2']);
@@ -44,6 +48,24 @@ export default function Home() {
         setGameState('playing');
     };
 
+    const saveScoresToFirestore = async (finishedPlayers: Player[]) => {
+        try {
+            await Promise.all(
+                finishedPlayers.map(player =>
+                    addDoc(collection(db, 'scores'), {
+                        playerName: player.name,
+                        totalScore: player.totalScore,
+                        numRounds,
+                        rounds: player.rounds,
+                        playedAt: serverTimestamp(),
+                    })
+                )
+            );
+        } catch (err) {
+            console.error('Failed to save scores:', err);
+        }
+    };
+
     const recordThrow = (points: number) => {
         const finalPoints = points + (metalBonus ? 3 : 0);
         const newScores = [...currentRoundScores, finalPoints];
@@ -59,6 +81,7 @@ export default function Home() {
             if (currentPlayerIndex === players.length - 1) {
                 if (currentRound === numRounds - 1) {
                     setGameState('finished');
+                    saveScoresToFirestore(updatedPlayers);
                 } else {
                     setCurrentRound(currentRound + 1);
                     setCurrentPlayerIndex(0);
@@ -117,6 +140,11 @@ export default function Home() {
         setCurrentThrow(0);
         setCurrentRoundScores([]);
     };
+
+    // ── LEADERBOARD OVERLAY ───────────────────────────────────────────────────
+    if (showLeaderboard) {
+        return <Leaderboard onClose={() => setShowLeaderboard(false)} />;
+    }
 
     // ── EDIT SCREEN ──────────────────────────────────────────────────────────
     if (gameState === 'editing') {
@@ -294,7 +322,7 @@ export default function Home() {
         return (
             <div className="min-h-screen bg-[url('/weathered_wood.jpg')] bg-cover bg-center p-4 flex flex-col">
             <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
-                    <h1 className="text-4xl font-bold text-white text-center mt-8 mb-8">Score</h1>
+                <h1 className="text-4xl font-bold text-white text-center mt-8 mb-8">Setup</h1>
 
                 <div className="bg-white/60 backdrop-blur-md rounded-lg shadow-lg p-6 space-y-6">
                 <div>
@@ -361,6 +389,14 @@ export default function Home() {
                         </div>
 
                         <button
+                            onClick={() => setShowLeaderboard(true)}
+                            className="w-full flex items-center justify-center gap-2 bg-white hover:bg-indigo-50 text-indigo-600 border border-indigo-200 font-semibold py-3 rounded-2xl text-base transition-colors"
+                        >
+                            <Trophy className="w-4 h-4" />
+                            Leaderboard
+                        </button>
+
+                        <button
                             onClick={startGame}
                             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl text-lg transition-colors"
                         >
@@ -400,6 +436,13 @@ export default function Home() {
                         >
                             <Pencil className="w-5 h-5 text-gray-600" />
                         </button>
+                        <button
+                            onClick={() => setShowLeaderboard(true)}
+                            className="ml-1 p-2 bg-white/70 hover:bg-white rounded-lg transition-colors shadow-sm"
+                            title="View leaderboard"
+                        >
+                            <Trophy className="w-5 h-5 text-indigo-600" />
+                        </button>
                     </div>
                 </div>
 
@@ -437,45 +480,15 @@ export default function Home() {
 
                     {/* Score Grid */}
                     <div className="grid grid-cols-3 gap-2 mb-2">
-                        <button
-                            onClick={() => recordThrow(0)}
-                            className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-4 rounded-lg text-xl"
-                        >
-                            0
-                        </button>
-                        <button
-                            onClick={() => recordThrow(1)}
-                            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 rounded-lg text-xl"
-                        >
-                            1
-                        </button>
-                        <button
-                            onClick={() => recordThrow(2)}
-                            className="bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-lg text-xl"
-                        >
-                            2
-                        </button>
+                            <button onClick={() => recordThrow(0)} className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-4 rounded-lg text-xl">0</button>
+                            <button onClick={() => recordThrow(1)} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 rounded-lg text-xl">1</button>
+                            <button onClick={() => recordThrow(2)} className="bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-lg text-xl">2</button>
                     </div>
 
                     <div className="grid grid-cols-3 gap-2 mb-2">
-                        <button
-                            onClick={() => recordThrow(3)}
-                            className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-4 rounded-lg text-xl"
-                        >
-                            3
-                        </button>
-                        <button
-                            onClick={() => recordThrow(4)}
-                            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-lg text-xl"
-                        >
-                            4
-                        </button>
-                        <button
-                            onClick={() => recordThrow(7)}
-                            className="bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-lg text-xl"
-                        >
-                            🎯 7
-                        </button>
+                            <button onClick={() => recordThrow(3)} className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-4 rounded-lg text-xl">3</button>
+                            <button onClick={() => recordThrow(4)} className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-lg text-xl">4</button>
+                            <button onClick={() => recordThrow(7)} className="bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-lg text-xl">🎯 7</button>
                     </div>
                   </div>
                 </div>
@@ -503,8 +516,7 @@ export default function Home() {
                             >
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-2">
-                                        <span
-                                            className="text-2xl">{index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '👤'}</span>
+                                        <span className="text-2xl">{index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '👤'}</span>
                                         <span className="font-bold text-lg">{player.name}</span>
                                     </div>
                                     <span className="text-2xl font-bold text-indigo-600">{player.totalScore}</span>
@@ -545,6 +557,14 @@ export default function Home() {
                         </table>
                     </div>
                 </div>
+
+                <button
+                    onClick={() => setShowLeaderboard(true)}
+                    className="flex items-center justify-center gap-2 bg-white/60 backdrop-blur-md hover:bg-white/80 text-indigo-600 font-bold py-4 rounded-lg text-lg transition-colors mb-3"
+                >
+                    <Trophy className="w-5 h-5" />
+                    View Leaderboard
+                </button>
 
                 <button
                     onClick={resetGame}
