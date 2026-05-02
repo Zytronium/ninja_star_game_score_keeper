@@ -14,7 +14,7 @@ export type ScoreEntry = {
     playerName: string;
     totalScore: number;
     numRounds: number;    // used to filter by game length
-    rounds: number[][];   // [round][throw] — e.g. [[4,2,7],[3,3,4],…]
+    rounds: number[];     // per-round totals — e.g. [13, 10, 11, …]
     playedAt: Date;       // stored as Firestore Timestamp, converted on read
 };
 
@@ -133,27 +133,27 @@ function ScoreRow({
             <div
                 className={`relative flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors
           ${isTop
-                    ? 'border-yellow-300/60 bg-yellow-50/40 backdrop-blur-md'
-                    : 'border-white/30 bg-white/30 backdrop-blur-md hover:bg-white/45'
+                    ? 'border-yellow-400/80 bg-yellow-50/90'
+                    : 'border-white/60 bg-white/80 hover:bg-white/90'
                 }`}
             >
                 <RankBadge rank={rank} />
 
                 <div className="flex-1 min-w-0">
-                    <p className={`font-bold truncate ${isTop ? 'text-yellow-900' : 'text-gray-800'}`}>
+                    <p className={`font-bold truncate ${isTop ? 'text-yellow-900' : 'text-gray-900'}`}>
                         {entry.playerName}
                     </p>
-                    <p className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
+                    <p className="flex items-center gap-1 text-xs text-gray-600 mt-0.5">
                         <Calendar className="w-3 h-3" />
                         {formatDate(entry.playedAt)}
                     </p>
                 </div>
 
                 <div className="text-right shrink-0">
-                    <span className={`text-2xl font-black tabular-nums ${isTop ? 'text-yellow-700' : 'text-indigo-600'}`}>
+                    <span className={`text-2xl font-black tabular-nums ${isTop ? 'text-yellow-800' : 'text-indigo-700'}`}>
                         {entry.totalScore}
                     </span>
-                    <p className="text-xs text-gray-400">pts</p>
+                    <p className="text-xs text-gray-500">pts</p>
                 </div>
             </div>
         </div>
@@ -343,15 +343,15 @@ export default function Leaderboard({ onClose }: { onClose?: () => void }) {
 
                         {!loading && !error && entries.length > 0 && (
                             <>
-                                <div className="bg-yellow-400/20 backdrop-blur-md border border-yellow-300/50 rounded-2xl p-4 mb-4 flex items-center gap-3">
+                                <div className="bg-yellow-100/95 border border-yellow-400/80 rounded-2xl p-4 mb-4 flex items-center gap-3">
                                     <Star className="w-7 h-7 text-yellow-400 shrink-0 fill-yellow-300" />
                                     <div>
-                                        <p className="text-xs text-yellow-800/70 font-medium uppercase tracking-wider">
+                                        <p className="text-xs text-amber-900 font-medium uppercase tracking-wider">
                                             Record — {selectedRounds} rounds
                                         </p>
-                                        <p className="text-yellow-900 font-black text-xl leading-tight">
+                                        <p className="text-gray-900 font-black text-xl leading-tight">
                                             {entries[0].playerName}
-                                            <span className="text-yellow-600 ml-2">{topScore} pts</span>
+                                            <span className="text-amber-800 ml-2">{topScore} pts</span>
                                         </p>
                                     </div>
                                 </div>

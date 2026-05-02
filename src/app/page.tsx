@@ -56,7 +56,11 @@ export default function Home() {
                         playerName: player.name,
                         totalScore: player.totalScore,
                         numRounds,
-                        rounds: player.rounds,
+                        // Firestore doesn't support nested arrays — store each
+                        // round as its total (sum of throws) instead.
+                        rounds: player.rounds.map(throws =>
+                            throws.reduce((a, b) => a + b, 0)
+                        ),
                         playedAt: serverTimestamp(),
                     })
                 )
