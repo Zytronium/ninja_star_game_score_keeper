@@ -298,13 +298,21 @@ export default function Home() {
 
                 <div className="bg-white/60 backdrop-blur-md rounded-lg shadow-lg p-6 space-y-6">
                 <div>
-                            <label className="block text-gray-700 font-semibold mb-2">Number of Rounds</label>
-                            <input
-                                type="number"
-                                min="1"
-                                max="10"
-                                value={numRounds}
-                                onChange={(e) => setNumRounds(parseInt(e.target.value) || 0)}
+                    <label className="block text-gray-700 font-semibold mb-2">Number of Rounds</label>
+                    <input
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={numRounds}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === '') {
+                                setNumRounds('' as any);
+                                    } else {
+                                        const parsed = parseInt(value);
+                                        setNumRounds(isNaN(parsed) ? 1 : parsed);
+                                    }
+                                }}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg text-lg text-black"
                             />
                         </div>
@@ -317,11 +325,16 @@ export default function Home() {
                                 max="8"
                                 value={numPlayers}
                                 onChange={(e) => {
-                                    const num = parseInt(e.target.value) || 0;
-                                    setNumPlayers(num);
-                                    setPlayerNames(Array(num).fill('').map((_, i) =>
-                                        playerNames[i] || `Player ${i + 1}`
-                                    ));
+                                    const value = e.target.value;
+                                    if (value === '') {
+                                        setNumPlayers('' as any);
+                                    } else {
+                                        const num = parseInt(value);
+                                        setNumPlayers(isNaN(num) ? 1 : num);
+                                        setPlayerNames(Array(isNaN(num) ? 1 : num).fill('').map((_, i) =>
+                                            playerNames[i] || `Player ${i + 1}`
+                                        ));
+                                    }
                                 }}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg text-lg text-black"
                             />
