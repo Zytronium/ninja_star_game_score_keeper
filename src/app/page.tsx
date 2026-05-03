@@ -1,6 +1,6 @@
 'use client';
 
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {Pencil, ChevronLeft, Trophy} from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -13,6 +13,47 @@ type Player = {
 };
 
 type GameState = 'setup' | 'playing' | 'editing' | 'finished';
+
+const STORAGE_KEY = 'ninja-star-game-state';
+
+type PersistedState = {
+    gameState: GameState;
+    numRounds: number;
+    numPlayers: number;
+    playerNames: string[];
+    players: Player[];
+    currentPlayerIndex: number;
+    currentRound: number;
+    currentThrow: number;
+    currentRoundScores: number[];
+};
+
+function loadSavedGame(): PersistedState | null {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        const parsed: PersistedState = JSON.parse(raw);
+        // Only treat as resumable if the game is actively in progress
+        if (parsed.gameState !== 'playing' && parsed.gameState !== 'editing') return null;
+        return parsed;
+    } catch {
+        return null;
+    }
+}
+
+function persistGameState(state: PersistedState) {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {
+        // Silently ignore storage errors (e.g. private browsing quota)
+    }
+}
+
+function clearSavedGame() {
+    try {
+        localStorage.removeItem(STORAGE_KEY);
+    } catch { /* ignore */ }
+}
 
 export default function Home() {
     const [gameState, setGameState] = useState<GameState>('setup');
@@ -34,6 +75,13 @@ export default function Home() {
     const [editStep, setEditStep] = useState<'selectPlayer' | 'selectRound' | 'selectThrow' | 'selectScore'>('selectPlayer');
     const [editMetalBonus, setEditMetalBonus] = useState(false);
 
+    // Resumable game detected from localStorage
+    const [savedGame, setSavedGame] = useState<PersistedState | null>(null);
+
+    useEffect(() => {
+        setSavedGame(loadSavedGame());
+    }, []);
+
     const startGame = () => {
         const initialPlayers: Player[] = playerNames.map(name => ({
             name,
@@ -46,6 +94,22 @@ export default function Home() {
         setCurrentThrow(0);
         setCurrentRoundScores([]);
         setGameState('playing');
+        // Starting a new game clears any previous save
+        clearSavedGame();
+        setSavedGame(null);
+    };
+
+    const resumeGame = () => {
+        if (!savedGame) return;
+        setNumRounds(savedGame.numRounds);
+        setNumPlayers(savedGame.numPlayers);
+        setPlayerNames(savedGame.playerNames);
+        setPlayers(savedGame.players);
+        setCurrentPlayerIndex(savedGame.currentPlayerIndex);
+        setCurrentRound(savedGame.currentRound);
+        setCurrentThrow(savedGame.currentThrow);
+        setCurrentRoundScores(savedGame.currentRoundScores);
+        setGameState(savedGame.gameState);
     };
 
     const saveScoresToFirestore = async (finishedPlayers: Player[]) => {
@@ -84,20 +148,60 @@ export default function Home() {
 
             if (currentPlayerIndex === players.length - 1) {
                 if (currentRound === numRounds - 1) {
+                    // Game finished: persist finished state then clear (no resume needed)
+                    clearSavedGame();
+                    setSavedGame(null);
                     setGameState('finished');
                     saveScoresToFirestore(updatedPlayers);
                 } else {
-                    setCurrentRound(currentRound + 1);
+                    const nextRound = currentRound + 1;
+                    setCurrentRound(nextRound);
                     setCurrentPlayerIndex(0);
+                    setCurrentThrow(0);
+                    setCurrentRoundScores([]);
+                    persistGameState({
+                        gameState: 'playing',
+                        numRounds,
+                        numPlayers,
+                        playerNames,
+                        players: updatedPlayers,
+                        currentPlayerIndex: 0,
+                        currentRound: nextRound,
+                        currentThrow: 0,
+                        currentRoundScores: [],
+                    });
                 }
             } else {
-                setCurrentPlayerIndex(currentPlayerIndex + 1);
-            }
-
+                const nextPlayerIndex = currentPlayerIndex + 1;
+                setCurrentPlayerIndex(nextPlayerIndex);
             setCurrentThrow(0);
             setCurrentRoundScores([]);
+                persistGameState({
+                    gameState: 'playing',
+                    numRounds,
+                    numPlayers,
+                    playerNames,
+                    players: updatedPlayers,
+                    currentPlayerIndex: nextPlayerIndex,
+                    currentRound,
+                    currentThrow: 0,
+                    currentRoundScores: [],
+                });
+            }
         } else {
-            setCurrentThrow(currentThrow + 1);
+            const nextThrow = currentThrow + 1;
+            setCurrentThrow(nextThrow);
+            persistGameState({
+                gameState: 'playing',
+                numRounds,
+                numPlayers,
+                playerNames,
+                players,
+                currentPlayerIndex,
+                currentRound,
+                currentThrow: nextThrow,
+                currentRoundScores: newScores,
+            });
         }
     };
 
@@ -131,9 +235,23 @@ export default function Home() {
         setEditMetalBonus(false);
         setEditStep('selectPlayer');
         setGameState('playing');
+
+        persistGameState({
+            gameState: 'playing',
+            numRounds,
+            numPlayers,
+            playerNames,
+            players: updatedPlayers,
+            currentPlayerIndex,
+            currentRound,
+            currentThrow,
+            currentRoundScores,
+        });
     };
 
     const resetGame = () => {
+        clearSavedGame();
+        setSavedGame(null);
         setGameState('setup');
         setNumRounds(5);
         setNumPlayers(2);
@@ -399,6 +517,16 @@ export default function Home() {
                             <Trophy className="w-4 h-4" />
                             Leaderboard
                         </button>
+
+                        {/* Resume Game — only shown when a mid-game save exists */}
+                        {savedGame && (
+                            <button
+                                onClick={resumeGame}
+                                className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-2xl text-lg transition-colors"
+                            >
+                                ▶ Resume Game ({savedGame.playerNames.join(', ')} · Round {savedGame.currentRound + 1}/{savedGame.numRounds})
+                            </button>
+                        )}
 
                         <button
                             onClick={startGame}
