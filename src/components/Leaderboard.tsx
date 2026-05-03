@@ -134,7 +134,7 @@ function ScoreRow({
                 className={`relative flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors
           ${isTop
                     ? 'border-yellow-400/80 bg-yellow-50/90'
-                    : 'border-white/60 bg-white/80 hover:bg-white/90'
+                    : 'border-white/60 bg-white/80'
                 }`}
             >
                 <RankBadge rank={rank} />
