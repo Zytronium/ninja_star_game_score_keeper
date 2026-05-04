@@ -2,7 +2,7 @@
 
 import {useState, useEffect} from 'react';
 import {Pencil, ChevronLeft, Trophy} from 'lucide-react';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Leaderboard from '@/components/Leaderboard';
 
@@ -112,22 +112,27 @@ export default function Home() {
         setGameState(savedGame.gameState);
     };
 
+    const randomSuffix = () => {
+        const chars = 'abcdefghijklmnopqrstuvwxyz';
+        return Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    };
+
     const saveScoresToFirestore = async (finishedPlayers: Player[]) => {
         try {
             await Promise.all(
-                finishedPlayers.map(player =>
-                    addDoc(collection(db, 'scores'), {
+                finishedPlayers.map(player => {
+                    const name = player.name.replace(/\s+/g, '_');
+                    const docId = `${name}-${player.totalScore}-${numRounds}R-${randomSuffix()}`;
+                    return setDoc(doc(db, 'scores', docId), {
                         playerName: player.name,
                         totalScore: player.totalScore,
                         numRounds,
-                        // Firestore doesn't support nested arrays — store each
-                        // round as its total (sum of throws) instead.
                         rounds: player.rounds.map(throws =>
                             throws.reduce((a, b) => a + b, 0)
                         ),
                         playedAt: serverTimestamp(),
-                    })
-                )
+                    });
+                })
             );
         } catch (err) {
             console.error('Failed to save scores:', err);
