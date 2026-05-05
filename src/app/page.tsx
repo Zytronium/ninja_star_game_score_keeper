@@ -1,10 +1,11 @@
 'use client';
 
 import {useState, useEffect} from 'react';
-import {Pencil, ChevronLeft, Trophy} from 'lucide-react';
+import {Pencil, ChevronLeft, Trophy, Info} from 'lucide-react';
 import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Leaderboard from '@/components/Leaderboard';
+import Legend from '@/components/Legend';
 
 type Player = {
     name: string;
@@ -58,6 +59,7 @@ function clearSavedGame() {
 export default function Home() {
     const [gameState, setGameState] = useState<GameState>('setup');
     const [showLeaderboard, setShowLeaderboard] = useState(false);
+    const [showLegend, setShowLegend] = useState(false);
     const [numRounds, setNumRounds] = useState(5);
     const [numPlayers, setNumPlayers] = useState(2);
     const [playerNames, setPlayerNames] = useState<string[]>(['Player 1', 'Player 2']);
@@ -267,6 +269,11 @@ export default function Home() {
         setCurrentThrow(0);
         setCurrentRoundScores([]);
     };
+
+    // ── LEGEND OVERLAY ────────────────────────────────────────────────────────
+    if (showLegend) {
+        return <Legend onClose={() => setShowLegend(false)} />;
+    }
 
     // ── LEADERBOARD OVERLAY ───────────────────────────────────────────────────
     if (showLeaderboard) {
@@ -516,6 +523,14 @@ export default function Home() {
                         </div>
 
                         <button
+                            onClick={() => setShowLegend(true)}
+                            className="w-full flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 font-semibold py-3 rounded-2xl text-base transition-colors"
+                        >
+                            <Info className="w-4 h-4" />
+                            How to Score
+                        </button>
+
+                        <button
                             onClick={() => setShowLeaderboard(true)}
                             className="w-full flex items-center justify-center gap-2 bg-white hover:bg-indigo-50 text-indigo-600 border border-indigo-200 font-semibold py-3 rounded-2xl text-base transition-colors"
                         >
@@ -555,7 +570,25 @@ export default function Home() {
             <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
                 <div className="bg-white/60 backdrop-blur-md rounded-lg shadow-lg p-4 mb-4">
                     <div className="flex items-start justify-between">
-                        <div className="flex-1">
+                        {/* Left: Info + Leaderboard stacked */}
+                        <div className="flex flex-col gap-1">
+                            <button
+                                onClick={() => setShowLegend(true)}
+                                className="p-2 bg-white/70 hover:bg-white rounded-lg transition-colors shadow-sm"
+                                title="How to score"
+                            >
+                                <Info className="w-5 h-5 text-gray-600" />
+                            </button>
+                            <button
+                                onClick={() => setShowLeaderboard(true)}
+                                className="p-2 bg-white/70 hover:bg-white rounded-lg transition-colors shadow-sm"
+                                title="View leaderboard"
+                            >
+                                <Trophy className="w-5 h-5 text-indigo-600" />
+                            </button>
+                        </div>
+
+                        <div className="flex-1 px-2">
                 <div className="text-center mb-2">
                             <div className="text-sm text-gray-500">Round {currentRound + 1} of {numRounds}</div>
                             <div className="text-sm text-gray-500">Throw {currentThrow + 1} of 4</div>
@@ -565,20 +598,14 @@ export default function Home() {
                             <div className="text-lg text-gray-600">This Turn: {currentTurnScore} pts</div>
                         </div>
                     </div>
-                        {/* Edit Button */}
+
+                        {/* Right: Edit */}
                         <button
                             onClick={openEditMode}
-                            className="ml-2 p-2 bg-white/70 hover:bg-white rounded-lg transition-colors shadow-sm"
+                            className="p-2 bg-white/70 hover:bg-white rounded-lg transition-colors shadow-sm"
                             title="Edit a previous score"
                         >
                             <Pencil className="w-5 h-5 text-gray-600" />
-                        </button>
-                        <button
-                            onClick={() => setShowLeaderboard(true)}
-                            className="ml-1 p-2 bg-white/70 hover:bg-white rounded-lg transition-colors shadow-sm"
-                            title="View leaderboard"
-                        >
-                            <Trophy className="w-5 h-5 text-indigo-600" />
                         </button>
                     </div>
                 </div>
