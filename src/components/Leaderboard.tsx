@@ -52,7 +52,7 @@ function useLeaderboard(numRounds: number, cls: LeaderboardClass) {
             })
             .catch(err => setError(err.message))
             .finally(() => setLoading(false));
-    }, [numRounds]);
+    }, [numRounds, cls]);
 
     return { entries, loading, error };
 }
@@ -81,6 +81,7 @@ function nextClass(cls: LeaderboardClass): LeaderboardClass {
             return 'A';
     }
 }
+
 function prevClass(cls: LeaderboardClass): LeaderboardClass {
     switch (cls) {
         case 'S':
@@ -94,10 +95,16 @@ function prevClass(cls: LeaderboardClass): LeaderboardClass {
     }
 }
 
-function getClassFromDistance(distance: number): LeaderboardClass {
+export function getClassFromDistance(distance: number): LeaderboardClass {
     if (distance === 20) return 'S';
     if (distance === 17) return 'A';
     return 'B'; // 14ft
+}
+
+export function getDistanceFromClass(cls: LeaderboardClass): number {
+    if (cls === 'S') return 20;
+    if (cls === 'A') return 17;
+    return 14;
 }
 
 function getCollectionName(cls: LeaderboardClass) {
@@ -201,11 +208,19 @@ function ScoreRow({
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function Leaderboard({ onClose }: { onClose?: () => void }) {
-    const [selectedRounds, setSelectedRounds] = useState(5);
-    const [roundInputValue, setRoundInputValue] = useState('5');
-    const [classInputValue, setClassInputValue] = useState('A');
-    const [selectedClass, setSelectedClass] = useState<LeaderboardClass>('A');
+export default function Leaderboard({
+    onClose,
+    initialClass = 'A',
+    initialRounds = 5,
+}: {
+    onClose?: () => void;
+    initialClass?: LeaderboardClass;
+    initialRounds?: number;
+}) {
+    const [selectedRounds, setSelectedRounds] = useState(initialRounds);
+    const [roundInputValue, setRoundInputValue] = useState(String(initialRounds));
+    const [classInputValue, setClassInputValue] = useState<string>(initialClass);
+    const [selectedClass, setSelectedClass] = useState<LeaderboardClass>(initialClass);
     const { entries, loading, error } = useLeaderboard(selectedRounds, selectedClass);
 
     const topScore = entries[0]?.totalScore ?? 0;
@@ -228,6 +243,7 @@ export default function Leaderboard({ onClose }: { onClose?: () => void }) {
             setSelectedRounds(parsed);
         }
     }
+
     function handleClassChange(e: React.ChangeEvent<HTMLInputElement>) {
         const cls = e.target.value.toUpperCase();
         setClassInputValue(cls);
@@ -238,7 +254,6 @@ export default function Leaderboard({ onClose }: { onClose?: () => void }) {
 
     function handleClassBlur() {
         const cls = classInputValue.toUpperCase();
-
         if (!['S', 'A', 'B'].includes(cls)) {
             setClassInputValue('A');
             setSelectedClass('A');
@@ -247,6 +262,9 @@ export default function Leaderboard({ onClose }: { onClose?: () => void }) {
             setSelectedClass(cls as LeaderboardClass);
         }
     }
+
+    // Distance label shown next to the class selector
+    const distanceLabel: Record<LeaderboardClass, string> = { S: '20ft', A: '17ft', B: '14ft' };
 
     return (
         <>
@@ -340,7 +358,7 @@ export default function Leaderboard({ onClose }: { onClose?: () => void }) {
                     </div>
 
                     {/* ── Round & Class Selector ────────────────────────────────────────────── */}
-                    <div className="bg-white/20 backdrop-blur-md rounded-2xl p-3 flex items-center justify-center gap-3 mb-5 shadow-inner">
+                    <div className="bg-white/20 backdrop-blur-md rounded-2xl p-3 flex items-center justify-center gap-3 mb-5 shadow-inner flex-wrap">
                         <span className="text-white/80 text-sm font-semibold">Rounds:</span>
                         <div className="flex items-center gap-2">
                             <input
@@ -402,6 +420,9 @@ export default function Leaderboard({ onClose }: { onClose?: () => void }) {
                                     ▼
                                 </button>
                             </div>
+                            <span className="text-white/60 text-xs font-medium">
+                                {distanceLabel[selectedClass]}
+                            </span>
                         </div>
                     </div>
 
@@ -425,7 +446,7 @@ export default function Leaderboard({ onClose }: { onClose?: () => void }) {
                                 <Trophy className="w-10 h-10 text-gray-400 mx-auto mb-3" />
                                 <p className="text-gray-600 font-semibold">No scores yet</p>
                                 <p className="text-gray-400 text-sm mt-1">
-                                    Play a {selectedRounds}-round game to get on the board!
+                                    Play a {selectedRounds}-round Class {selectedClass} game to get on the board!
                                 </p>
                             </div>
                         )}
@@ -436,7 +457,7 @@ export default function Leaderboard({ onClose }: { onClose?: () => void }) {
                                     <Star className="w-7 h-7 text-yellow-400 shrink-0 fill-yellow-300" />
                                     <div>
                                         <p className="text-xs text-amber-900 font-medium uppercase tracking-wider">
-                                            Record — {selectedRounds} rounds
+                                            Record — {selectedRounds} rounds · Class {selectedClass} · {distanceLabel[selectedClass]}
                                         </p>
                                         <p className="text-gray-900 font-black text-xl leading-tight">
                                             {entries[0].playerName}
@@ -459,7 +480,7 @@ export default function Leaderboard({ onClose }: { onClose?: () => void }) {
                     </div>
 
                     <p className="text-center text-white/30 text-xs pb-6 pt-4">
-                        Top 10 scores per round count
+                        Top 10 scores per round count · per distance class
                     </p>
                 </div>
             </div>
