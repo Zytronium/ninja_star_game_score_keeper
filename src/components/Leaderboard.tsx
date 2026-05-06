@@ -294,7 +294,7 @@ export default function Leaderboard({
           text-align: center;
           transition: background 0.18s, border-color 0.18s, box-shadow 0.18s;
           outline: none;
-          width: 3rem;
+          width: 2.5rem;
           padding: 0.5rem 0.25rem;
           -moz-appearance: textfield;
         }
@@ -359,70 +359,75 @@ export default function Leaderboard({
 
                     {/* ── Round & Class Selector ────────────────────────────────────────────── */}
                     <div className="bg-white/20 backdrop-blur-md rounded-2xl p-3 flex items-center justify-center gap-3 mb-5 shadow-inner flex-wrap">
-                        <span className="text-white/80 text-sm font-semibold">Rounds:</span>
-                        <div className="flex items-center gap-2">
-                            <input
-                                type="number"
-                                min={1}
-                                value={roundInputValue}
-                                onChange={handleRoundsChange}
-                                onBlur={handleRoundsBlur}
-                                className="rounds-input"
-                            />
-                            <div className="rounds-stepper">
-                                <button
-                                    onClick={() => {
-                                        const next = selectedRounds + 1;
-                                        setSelectedRounds(next);
-                                        setRoundInputValue(String(next));
-                                    }}
-                                >
-                                    ▲
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        const next = Math.max(1, selectedRounds - 1);
-                                        setSelectedRounds(next);
-                                        setRoundInputValue(String(next));
-                                    }}
-                                >
-                                    ▼
-                                </button>
+                        <div className='flex flex-col items-center'>
+                            <span className="text-white/80 text-sm font-semibold">Rounds:</span>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="number"
+                                    min={1}
+                                    value={roundInputValue}
+                                    onChange={handleRoundsChange}
+                                    onBlur={handleRoundsBlur}
+                                    className="rounds-input"
+                                />
+                                <div className="rounds-stepper">
+                                    <button
+                                        onClick={() => {
+                                            const next = selectedRounds + 1;
+                                            setSelectedRounds(next);
+                                            setRoundInputValue(String(next));
+                                        }}
+                                    >
+                                        ▲
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const next = Math.max(1, selectedRounds - 1);
+                                            setSelectedRounds(next);
+                                            setRoundInputValue(String(next));
+                                        }}
+                                    >
+                                        ▼
+                                    </button>
+                                </div>
                             </div>
                         </div>
+                        <div className="width-8"></div>
 
-                        <span className="text-white/80 text-sm font-semibold">Class:</span>
-                        <div className="flex items-center gap-2">
-                            <input
-                                type="text"
-                                value={classInputValue}
-                                onChange={handleClassChange}
-                                onBlur={handleClassBlur}
-                                className="rounds-input"
-                            />
-                            <div className="rounds-stepper">
-                                <button
-                                    onClick={() => {
-                                        const next = nextClass(selectedClass);
-                                        setSelectedClass(next);
-                                        setClassInputValue(next);
-                                    }}
-                                >
-                                    ▲
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        const next = prevClass(selectedClass);
-                                        setSelectedClass(next);
-                                        setClassInputValue(next);
-                                    }}
-                                >
-                                    ▼
-                                </button>
+                        <div className='flex flex-col items-center'>
+                            <span className="text-white/80 text-sm font-semibold">Class:</span>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="text"
+                                    value={classInputValue}
+                                    onChange={handleClassChange}
+                                    onBlur={handleClassBlur}
+                                    className="rounds-input"
+                                />
+                                <div className="rounds-stepper">
+                                    <button
+                                        onClick={() => {
+                                            const next = nextClass(selectedClass);
+                                            setSelectedClass(next);
+                                            setClassInputValue(next);
+                                        }}
+                                    >
+                                        ▲
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const next = prevClass(selectedClass);
+                                            setSelectedClass(next);
+                                            setClassInputValue(next);
+                                        }}
+                                    >
+                                        ▼
+                                    </button>
+                                </div>
+                                <span className="text-white/60 text-xs font-medium">
+                                    {distanceLabel[selectedClass]}
+                                </span>
                             </div>
-                            <span className="text-white/60 text-xs font-medium">
-                                {distanceLabel[selectedClass]}
-                            </span>
                         </div>
                     </div>
 
