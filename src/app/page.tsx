@@ -4,7 +4,7 @@ import {useState, useEffect} from 'react';
 import {Pencil, ChevronLeft, Trophy, Info} from 'lucide-react';
 import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import Leaderboard from '@/components/Leaderboard';
+import Leaderboard, { getClassFromDistance, type LeaderboardClass } from '@/components/Leaderboard';
 import Legend from '@/components/Legend';
 
 type Player = {
@@ -27,6 +27,7 @@ type PersistedState = {
     currentRound: number;
     currentThrow: number;
     currentRoundScores: number[];
+    distance?: number; // ft - determines leaderboard class (14=B, 17=A, 20=S)
 };
 
 function loadSavedGame(): PersistedState | null {
@@ -61,6 +62,8 @@ export default function Home() {
     const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [showLegend, setShowLegend] = useState(false);
     const [numRounds, setNumRounds] = useState(5);
+    const [distance, setDistance] = useState<number>(17); // 14=B, 17=A, 20=S
+    const [leaderboardAutoPreset, setLeaderboardAutoPreset] = useState<{ cls: LeaderboardClass; rounds: number } | null>(null);
     const [numPlayers, setNumPlayers] = useState(2);
     const [playerNames, setPlayerNames] = useState<string[]>(['Player 1', 'Player 2']);
     const [players, setPlayers] = useState<Player[]>([]);
@@ -111,6 +114,7 @@ export default function Home() {
         setCurrentRound(savedGame.currentRound);
         setCurrentThrow(savedGame.currentThrow);
         setCurrentRoundScores(savedGame.currentRoundScores);
+        setDistance(savedGame.distance ?? 17);
         setGameState(savedGame.gameState);
     };
 
@@ -120,12 +124,13 @@ export default function Home() {
     };
 
     const saveScoresToFirestore = async (finishedPlayers: Player[]) => {
+        const collectionName = `Leaderboard ${getClassFromDistance(distance)}`;
         try {
             await Promise.all(
                 finishedPlayers.map(player => {
                     const name = player.name.replace(/\s+/g, '_');
                     const docId = `${name}-${player.totalScore}-${numRounds}R-${randomSuffix()}`;
-                    return setDoc(doc(db, 'scores', docId), {
+                    return setDoc(doc(db, collectionName, docId), {
                         playerName: player.name,
                         totalScore: player.totalScore,
                         numRounds,
@@ -176,6 +181,7 @@ export default function Home() {
                         currentRound: nextRound,
                         currentThrow: 0,
                         currentRoundScores: [],
+                        distance,
                     });
                 }
             } else {
@@ -193,6 +199,7 @@ export default function Home() {
                     currentRound,
                     currentThrow: 0,
                     currentRoundScores: [],
+                    distance,
                 });
             }
         } else {
@@ -208,6 +215,7 @@ export default function Home() {
                 currentRound,
                 currentThrow: nextThrow,
                 currentRoundScores: newScores,
+                distance,
             });
         }
     };
@@ -253,6 +261,7 @@ export default function Home() {
             currentRound,
             currentThrow,
             currentRoundScores,
+            distance,
         });
     };
 
@@ -261,6 +270,7 @@ export default function Home() {
         setSavedGame(null);
         setGameState('setup');
         setNumRounds(5);
+        setDistance(17);
         setNumPlayers(2);
         setPlayerNames(['Player 1', 'Player 2']);
         setPlayers([]);
@@ -277,7 +287,13 @@ export default function Home() {
 
     // ── LEADERBOARD OVERLAY ───────────────────────────────────────────────────
     if (showLeaderboard) {
-        return <Leaderboard onClose={() => setShowLeaderboard(false)} />;
+        return (
+            <Leaderboard
+                onClose={() => { setShowLeaderboard(false); setLeaderboardAutoPreset(null); }}
+                initialClass={leaderboardAutoPreset?.cls ?? 'A'}
+                initialRounds={leaderboardAutoPreset?.rounds ?? 5}
+            />
+        );
     }
 
     // ── EDIT SCREEN ──────────────────────────────────────────────────────────
@@ -477,6 +493,28 @@ export default function Home() {
                                 }}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg text-lg text-black"
                             />
+                        </div>
+
+                        <div>
+                            <label className="block text-gray-700 font-semibold mb-2">Distance (Class)</label>
+                            <div className="grid grid-cols-3 gap-2">
+                                {([14, 17, 20] as const).map(d => (
+                                    <button
+                                        key={d}
+                                        onClick={() => setDistance(d)}
+                                        className={`py-3 rounded-lg font-bold text-base transition-colors border-2 ${
+                                            distance === d
+                                                ? 'bg-indigo-600 text-white border-indigo-600'
+                                                : 'bg-white text-gray-700 border-gray-300 hover:border-indigo-400'
+                                        }`}
+                                    >
+                                        {d}ft
+                                        <span className={`block text-xs font-normal ${distance === d ? 'text-indigo-200' : 'text-gray-400'}`}>
+                                            Class {d === 14 ? 'B' : d === 17 ? 'A' : 'S'}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
                         <div>
@@ -723,7 +761,10 @@ export default function Home() {
                 </div>
 
                 <button
-                    onClick={() => setShowLeaderboard(true)}
+                    onClick={() => {
+                        setLeaderboardAutoPreset({ cls: getClassFromDistance(distance), rounds: numRounds });
+                        setShowLeaderboard(true);
+                    }}
                     className="flex items-center justify-center gap-2 bg-white/60 backdrop-blur-md hover:bg-white/80 text-indigo-600 font-bold py-4 rounded-lg text-lg transition-colors mb-3"
                 >
                     <Trophy className="w-5 h-5" />
