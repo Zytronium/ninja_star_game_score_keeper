@@ -32,27 +32,27 @@ export default function Legend({ onClose }: LegendProps) {
     <div className="space-y-2 text-base">
     <p>
         <span className="font-bold text-gray-500">0 pts</span>
-    <span className="text-gray-700"> — A miss. The star does not stick to the board.</span>
+        <span className="text-gray-700"> — A miss. The star does not stick to the board.</span>
     </p>
     <p>
-    <span className="font-bold text-blue-500">1 pt</span>
-    <span className="text-gray-700"> — A hit to the outermost lighter-colored board.</span>
+        <span className="font-bold text-blue-500">1 pt</span>
+        <span className="text-gray-700"> — A hit to the outermost lighter-colored board.</span>
     </p>
     <p>
-    <span className="font-bold text-green-600">2 pts</span>
-    <span className="text-gray-700"> — A hit to the innermost darker-colored board, outside the target.</span>
+        <span className="font-bold text-green-600">2 pts</span>
+        <span className="text-gray-700"> — A hit to the innermost darker-colored board, outside the target.</span>
     </p>
     <p>
-    <span className="font-bold text-yellow-500">3 pts</span>
-    <span className="text-gray-700"> — A hit to the outermost two rings of the target, or to the white space in the corners of the target face.</span>
+        <span className="font-bold text-yellow-500">3 pts</span>
+        <span className="text-gray-700"> — A hit to the outermost two rings of the target, or to the white space in the corners of the target face.</span>
     </p>
     <p>
-    <span className="font-bold text-orange-500">4 pts</span>
-    <span className="text-gray-700"> — A hit to the innermost three rings of the target (rings 7, 8, and 9).</span>
+        <span className="font-bold text-orange-500">4 pts</span>
+        <span className="text-gray-700"> — A hit to the innermost three rings of the target (rings 7, 8, and 9).</span>
     </p>
     <p>
-    <span className="font-bold text-red-500">7 pts</span>
-    <span className="text-gray-700"> — A bullseye. Dead center.</span>
+        <span className="font-bold text-red-500">7 pts</span>
+        <span className="text-gray-700"> — A bullseye. Dead center.</span>
     </p>
     </div>
     </div>
@@ -61,7 +61,7 @@ export default function Legend({ onClose }: LegendProps) {
     <div className="bg-white/60 backdrop-blur-md rounded-2xl shadow-lg p-5 mb-4">
     <h2 className="font-bold text-gray-800 text-lg mb-2">Metal-on-Metal Bonus</h2>
     <p className="text-gray-700 text-base leading-relaxed">
-        If a ninja star or throwing knife strikes a previously thrown star (you can both hear and see the metal-on-metal contact) and sticks in the board, that throw earns{' '}
+        If a ninja star or throwing knife strikes a previously thrown star/knife (you can both hear and see the metal-on-metal contact) and sticks in the board, that throw earns{' '}
     <span className="font-bold text-emerald-600">3 bonus points</span>.
     To apply the bonus, press the{' '}
     <span className="font-semibold text-gray-800">Metal-on-Metal</span>{' '}
