@@ -18,11 +18,13 @@ export type ScoreEntry = {
     playedAt: Date;       // stored as Firestore Timestamp, converted on read
 };
 
+export type LeaderboardClass = 'S' | 'A' | 'B';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // DATA HOOK
 // ─────────────────────────────────────────────────────────────────────────────
 
-function useLeaderboard(numRounds: number) {
+function useLeaderboard(numRounds: number, cls: LeaderboardClass) {
     const [entries, setEntries] = useState<ScoreEntry[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -32,7 +34,7 @@ function useLeaderboard(numRounds: number) {
         setError(null);
 
         const q = query(
-            collection(db, 'scores'),
+            collection(db, getCollectionName(cls)),
             where('numRounds', '==', numRounds),
             orderBy('totalScore', 'desc'),
             limit(10),
@@ -65,6 +67,41 @@ function formatDate(d: Date) {
 
 function barWidth(score: number, topScore: number) {
     return topScore ? Math.round((score / topScore) * 100) : 0;
+}
+
+function nextClass(cls: LeaderboardClass): LeaderboardClass {
+    switch (cls) {
+        case 'S':
+            return 'S';
+        case 'A':
+            return 'S';
+        case 'B':
+            return 'A';
+        default: // should be impossible; default to A
+            return 'A';
+    }
+}
+function prevClass(cls: LeaderboardClass): LeaderboardClass {
+    switch (cls) {
+        case 'S':
+            return 'A';
+        case 'A':
+            return 'B';
+        case 'B':
+            return 'B';
+        default: // should be impossible; default to A
+            return 'A';
+    }
+}
+
+function getClassFromDistance(distance: number): LeaderboardClass {
+    if (distance === 20) return 'S';
+    if (distance === 17) return 'A';
+    return 'B'; // 14ft
+}
+
+function getCollectionName(cls: LeaderboardClass) {
+    return `Leaderboard ${cls}`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -166,13 +203,15 @@ function ScoreRow({
 
 export default function Leaderboard({ onClose }: { onClose?: () => void }) {
     const [selectedRounds, setSelectedRounds] = useState(5);
-    const [inputValue, setInputValue] = useState('5');
-    const { entries, loading, error } = useLeaderboard(selectedRounds);
+    const [roundInputValue, setRoundInputValue] = useState('5');
+    const [classInputValue, setClassInputValue] = useState('A');
+    const [selectedClass, setSelectedClass] = useState<LeaderboardClass>('A');
+    const { entries, loading, error } = useLeaderboard(selectedRounds, selectedClass);
 
     const topScore = entries[0]?.totalScore ?? 0;
 
     function handleRoundsChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setInputValue(e.target.value);
+        setRoundInputValue(e.target.value);
         const parsed = parseInt(e.target.value, 10);
         if (!isNaN(parsed) && parsed >= 1) {
             setSelectedRounds(parsed);
@@ -180,13 +219,32 @@ export default function Leaderboard({ onClose }: { onClose?: () => void }) {
     }
 
     function handleRoundsBlur() {
-        const parsed = parseInt(inputValue, 10);
+        const parsed = parseInt(roundInputValue, 10);
         if (isNaN(parsed) || parsed < 1) {
-            setInputValue('5');
+            setRoundInputValue('5');
             setSelectedRounds(5);
         } else {
-            setInputValue(String(parsed));
+            setRoundInputValue(String(parsed));
             setSelectedRounds(parsed);
+        }
+    }
+    function handleClassChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const cls = e.target.value.toUpperCase();
+        setClassInputValue(cls);
+        if (['S', 'A', 'B'].includes(cls)) {
+            setSelectedClass(cls as LeaderboardClass);
+        }
+    }
+
+    function handleClassBlur() {
+        const cls = classInputValue.toUpperCase();
+
+        if (!['S', 'A', 'B'].includes(cls)) {
+            setClassInputValue('A');
+            setSelectedClass('A');
+        } else {
+            setClassInputValue(cls);
+            setSelectedClass(cls as LeaderboardClass);
         }
     }
 
@@ -218,7 +276,7 @@ export default function Leaderboard({ onClose }: { onClose?: () => void }) {
           text-align: center;
           transition: background 0.18s, border-color 0.18s, box-shadow 0.18s;
           outline: none;
-          width: 4.5rem;
+          width: 3rem;
           padding: 0.5rem 0.25rem;
           -moz-appearance: textfield;
         }
@@ -281,14 +339,14 @@ export default function Leaderboard({ onClose }: { onClose?: () => void }) {
                         <p className="text-white/70 text-sm">All-time best individual scores</p>
                     </div>
 
-                    {/* ── Round selector ────────────────────────────────────────────── */}
+                    {/* ── Round & Class Selector ────────────────────────────────────────────── */}
                     <div className="bg-white/20 backdrop-blur-md rounded-2xl p-3 flex items-center justify-center gap-3 mb-5 shadow-inner">
                         <span className="text-white/80 text-sm font-semibold">Rounds:</span>
                         <div className="flex items-center gap-2">
                             <input
                                 type="number"
                                 min={1}
-                                value={inputValue}
+                                value={roundInputValue}
                                 onChange={handleRoundsChange}
                                 onBlur={handleRoundsBlur}
                                 className="rounds-input"
@@ -298,7 +356,7 @@ export default function Leaderboard({ onClose }: { onClose?: () => void }) {
                                     onClick={() => {
                                         const next = selectedRounds + 1;
                                         setSelectedRounds(next);
-                                        setInputValue(String(next));
+                                        setRoundInputValue(String(next));
                                     }}
                                 >
                                     ▲
@@ -307,7 +365,38 @@ export default function Leaderboard({ onClose }: { onClose?: () => void }) {
                                     onClick={() => {
                                         const next = Math.max(1, selectedRounds - 1);
                                         setSelectedRounds(next);
-                                        setInputValue(String(next));
+                                        setRoundInputValue(String(next));
+                                    }}
+                                >
+                                    ▼
+                                </button>
+                            </div>
+                        </div>
+
+                        <span className="text-white/80 text-sm font-semibold">Class:</span>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="text"
+                                value={classInputValue}
+                                onChange={handleClassChange}
+                                onBlur={handleClassBlur}
+                                className="rounds-input"
+                            />
+                            <div className="rounds-stepper">
+                                <button
+                                    onClick={() => {
+                                        const next = nextClass(selectedClass);
+                                        setSelectedClass(next);
+                                        setClassInputValue(next);
+                                    }}
+                                >
+                                    ▲
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        const next = prevClass(selectedClass);
+                                        setSelectedClass(next);
+                                        setClassInputValue(next);
                                     }}
                                 >
                                     ▼
