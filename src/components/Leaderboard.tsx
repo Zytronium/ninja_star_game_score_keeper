@@ -392,6 +392,7 @@ export default function Leaderboard({
                                 </div>
                             </div>
                         </div>
+
                         <div className="width-8"></div>
 
                         <div className='flex flex-col items-center'>
@@ -462,7 +463,7 @@ export default function Leaderboard({
                                     <Star className="w-7 h-7 text-yellow-400 shrink-0 fill-yellow-300" />
                                     <div>
                                         <p className="text-xs text-amber-900 font-medium uppercase tracking-wider">
-                                            Record — {selectedRounds} rounds · Class {selectedClass} · {distanceLabel[selectedClass]}
+                                            Record — {selectedRounds} rounds · Class {selectedClass}
                                         </p>
                                         <p className="text-gray-900 font-black text-xl leading-tight">
                                             {entries[0].playerName}
