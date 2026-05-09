@@ -1,6 +1,6 @@
 'use client';
 
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef, useCallback} from 'react';
 import {Pencil, ChevronLeft, Trophy, Info} from 'lucide-react';
 import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -87,6 +87,101 @@ export default function Home() {
         setSavedGame(loadSavedGame());
     }, []);
 
+    // ── AUDIO ─────────────────────────────────────────────────────────────────
+    const audioCtxRef = useRef<AudioContext | null>(null);
+    const audioBuffersRef = useRef<Map<string, AudioBuffer>>(new Map());
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const ctx = new AudioContext();
+        audioCtxRef.current = ctx;
+
+        const sounds: Record<string, string> = {
+            '0pt-1':     '/audio/0pt-1.m4a',
+            '0pt-2':     '/audio/0pt-2.m4a',
+            '0pt-3':     '/audio/0pt-3.m4a',
+            '0pt-4':     '/audio/0pt-4.m4a',
+            '0pt-5':     '/audio/0pt-5.m4a',
+            '0pt-6':     '/audio/0pt-6.mp3',
+            '1pt-1':     '/audio/1pt-1.m4a',
+            '1pt-2':     '/audio/1pt-2.m4a',
+            '1pt-3':     '/audio/1pt-3.m4a',
+            '2pt-1':     '/audio/2pt-1.m4a',
+            '2pt-2':     '/audio/2pt-2.m4a',
+            '2pt-3':     '/audio/2pt-3.m4a',
+            '2pt-4':     '/audio/2pt-4.m4a',
+            '2pt-5':     '/audio/2pt-5.m4a',
+            'bullseye':  '/audio/Bullseye.mp3',
+            'ding-1':    '/audio/Ding-1.m4a',
+            'ding-2':    '/audio/Ding-2.m4a',
+            'metal-0pt': '/audio/Metal-on-Metal 0pt.m4a',
+        };
+
+        Promise.all(
+            Object.entries(sounds).map(async ([name, url]) => {
+                try {
+                    const res = await fetch(url);
+                    const arrayBuffer = await res.arrayBuffer();
+                    const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+                    audioBuffersRef.current.set(name, audioBuffer);
+                } catch (err) {
+                    console.warn(`Failed to load sound: ${name}`, err);
+                }
+            })
+        );
+
+        return () => { ctx.close(); };
+    }, []);
+
+    const playSound = useCallback((name: string) => {
+        const ctx = audioCtxRef.current;
+        const buffer = audioBuffersRef.current.get(name);
+        if (!ctx || !buffer) return;
+        if (ctx.state === 'suspended') ctx.resume();
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(ctx.destination);
+        source.start(0);
+    }, []);
+
+    const playScoreSound = useCallback((basePoints: number, withMetal: boolean) => {
+        const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+
+        // 7 pts always plays Bullseye
+        if (basePoints === 7) {
+            playSound('bullseye');
+            if (withMetal) playSound(pick(['ding-1', 'ding-2']));
+            return;
+        }
+
+        // Metal-on-metal 0 pts: 50% chance to play only the metal-0pt sound
+        if (basePoints === 0 && withMetal && Math.random() < 0.5) {
+            playSound('metal-0pt');
+            return;
+        }
+
+        // Pick the score sound
+        let scoreSoundName: string;
+        if (basePoints === 0) {
+            // 5% chance for the rare 0pt-6 sound
+            scoreSoundName = Math.random() < 0.05
+                ? '0pt-6'
+                : pick(['0pt-1', '0pt-2', '0pt-3', '0pt-4', '0pt-5']);
+        } else if (basePoints === 1) {
+            scoreSoundName = pick(['1pt-1', '1pt-2', '1pt-3']);
+        } else {
+            // 2, 3, or 4 pts
+            scoreSoundName = pick(['2pt-1', '2pt-2', '2pt-3', '2pt-4', '2pt-5']);
+        }
+
+        playSound(scoreSoundName);
+
+        // Metal bonus adds a simultaneous ding
+        if (withMetal) {
+            playSound(pick(['ding-1', 'ding-2']));
+        }
+    }, [playSound]);
+
     const startGame = () => {
         const initialPlayers: Player[] = playerNames.map(name => ({
             name,
@@ -147,6 +242,7 @@ export default function Home() {
     };
 
     const recordThrow = (points: number) => {
+        playScoreSound(points, metalBonus);
         const finalPoints = points + (metalBonus ? 3 : 0);
         const newScores = [...currentRoundScores, finalPoints];
         setCurrentRoundScores(newScores);
