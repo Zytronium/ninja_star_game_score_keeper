@@ -142,6 +142,7 @@ export default function Home() {
         source.buffer = buffer;
         source.connect(ctx.destination);
         source.start(0);
+        navigator.vibrate(200)
     }, []);
 
     const playScoreSound = useCallback((basePoints: number, withMetal: boolean) => {
