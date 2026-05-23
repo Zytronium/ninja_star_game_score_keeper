@@ -2,6 +2,7 @@
 
 import {useState, useEffect, useRef, useCallback} from 'react';
 import {Pencil, ChevronLeft, Trophy, Info, RotateCcw, Play, Settings2} from 'lucide-react';
+import { HiOutlinePlayPause } from "react-icons/hi2";
 import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Leaderboard, { getClassFromDistance, type LeaderboardClass } from '@/components/Leaderboard';
@@ -585,21 +586,21 @@ export default function Home() {
     if (gameState === 'setup') {
         return (
             <div className="min-h-screen bg-[url('/weathered_wood.jpg')] bg-cover bg-center p-4 flex flex-col">
-            <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
-                <h1 className="text-4xl font-bold text-white text-center mt-8 mb-8">Setup</h1>
+                <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
+                    <h1 className="text-4xl font-bold text-white text-center mt-8 mb-8">Setup</h1>
 
-                <div className="bg-white/60 backdrop-blur-md rounded-lg shadow-lg p-6 space-y-6">
-                <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Number of Rounds</label>
-                    <input
-                        type="number"
-                        min="1"
-                        max="10"
-                        value={numRounds}
-                        onChange={(e) => {
-                            const value = e.target.value;
-                            if (value === '') {
-                                setNumRounds('' as any);
+                    <div className="bg-white/60 backdrop-blur-md rounded-lg shadow-lg p-6 space-y-6">
+                        <div>
+                            <label className="block text-gray-700 font-semibold mb-2">Number of Rounds</label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="10"
+                                value={numRounds}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (value === '') {
+                                        setNumRounds('' as any);
                                     } else {
                                         const parsed = parseInt(value);
                                         setNumRounds(isNaN(parsed) ? 1 : parsed);
@@ -623,7 +624,8 @@ export default function Home() {
                                         }`}
                                     >
                                         {d}ft
-                                        <span className={`block text-xs font-normal ${distance === d ? 'text-indigo-200' : 'text-gray-400'}`}>
+                                        <span
+                                            className={`block text-xs font-normal ${distance === d ? 'text-indigo-200' : 'text-gray-400'}`}>
                                             Class {d === 14 ? 'B' : d === 17 ? 'A' : 'S'}
                                         </span>
                                     </button>
@@ -678,7 +680,7 @@ export default function Home() {
                             onClick={() => setShowLegend(true)}
                             className="w-full flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 font-semibold py-3 rounded-2xl text-base transition-colors"
                         >
-                            <Info className="w-4 h-4" />
+                            <Info className="w-4 h-4"/>
                             How to Score
                         </button>
 
@@ -686,18 +688,22 @@ export default function Home() {
                             onClick={() => setShowLeaderboard(true)}
                             className="w-full flex items-center justify-center gap-2 bg-white hover:bg-indigo-50 text-indigo-600 border border-indigo-200 font-semibold py-3 rounded-2xl text-base transition-colors"
                         >
-                            <Trophy className="w-4 h-4" />
+                            <Trophy className="w-4 h-4"/>
                             Leaderboard
                         </button>
 
                         {/* Resume Game — only shown when a mid-game save exists */}
                         {savedGame && (
-                            <button
-                                onClick={resumeGame}
-                                className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-2xl text-lg transition-colors"
-                            >
-                                ▶ Resume Game ({savedGame.playerNames.join(', ')} · Round {savedGame.currentRound + 1}/{savedGame.numRounds})
-                            </button>
+                            <div className="flex flex-col items-center">
+                                <button
+                                    onClick={resumeGame}
+                                    className="flex items-center justify-center gap-2 w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-2xl text-lg transition-colors"
+                                >
+                                    <HiOutlinePlayPause className="w-7 h-7"/>
+                                    Resume Game
+                                </button>
+                                <span className="font-xs text-slate-600">({savedGame.playerNames.join(', ')} · R{savedGame.currentRound + 1}/{savedGame.numRounds})</span>
+                            </div>
                         )}
 
                         <button
