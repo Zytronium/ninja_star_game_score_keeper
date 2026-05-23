@@ -1,7 +1,7 @@
 'use client';
 
 import {useState, useEffect, useRef, useCallback} from 'react';
-import {Pencil, ChevronLeft, Trophy, Info} from 'lucide-react';
+import {Pencil, ChevronLeft, Trophy, Info, RotateCcw, Play, Settings2} from 'lucide-react';
 import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Leaderboard, { getClassFromDistance, type LeaderboardClass } from '@/components/Leaderboard';
@@ -377,6 +377,23 @@ export default function Home() {
         setCurrentRoundScores([]);
     };
 
+    const playAgain = () => {
+        // Reuse current config: numRounds, numPlayers, playerNames, distance
+        const initialPlayers: Player[] = playerNames.map(name => ({
+            name,
+            rounds: Array(numRounds).fill([]),
+            totalScore: 0,
+        }));
+        clearSavedGame();
+        setSavedGame(null);
+        setPlayers(initialPlayers);
+        setCurrentPlayerIndex(0);
+        setCurrentRound(0);
+        setCurrentThrow(0);
+        setCurrentRoundScores([]);
+        setGameState('playing');
+    };
+
     // ── LEGEND OVERLAY ────────────────────────────────────────────────────────
     if (showLegend) {
         return <Legend onClose={() => setShowLegend(false)} />;
@@ -685,8 +702,9 @@ export default function Home() {
 
                         <button
                             onClick={startGame}
-                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl text-lg transition-colors"
+                            className="flex items-center justify-center gap-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl text-lg transition-colors"
                         >
+                            <Play className="w-5 h-5"/>
                             Start Game
                         </button>
                     </div>
@@ -869,9 +887,18 @@ export default function Home() {
                 </button>
 
                 <button
-                    onClick={resetGame}
-                    className="bg-white/60 backdrop-blur-md hover:bg-white/90 text-indigo-600 font-bold py-4 rounded-lg text-lg transition-colors mb-4"
+                    onClick={playAgain}
+                    className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg text-lg transition-colors mb-3"
                 >
+                    <RotateCcw className="w-5 h-5" />
+                    Play Again
+                </button>
+
+                <button
+                    onClick={resetGame}
+                    className="flex items-center justify-center gap-2 bg-white/60 backdrop-blur-md hover:bg-white/90 text-indigo-600 font-bold py-4 rounded-lg text-lg transition-colors mb-4"
+                >
+                    <Settings2 className="w-5 h-5" />
                     New Game
                 </button>
             </div>
